@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://files.catbox.moe/92qh1k.png" alt="BetterDiscord logo" width="200" />
+<img src="https://files.catbox.moe/92qh1k.png" alt="BetterDiscord logo" width="300" />
 
 # Custom Badges — BetterDiscord
 
