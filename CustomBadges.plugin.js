@@ -2,7 +2,7 @@
  * @name CustomBadges
  * @author ItzMeShadow999
  * @description Adds a self-hosted custom badge with a hover tooltip to user profiles, visible to anyone else running this plugin. Ported from the Vencord CustomBadges plugin to the BetterDiscord API.
- * @version 1.2.4
+ * @version 1.3.0
  * @website https://custombadges.pages.dev/
  * @source https://github.com/ItzMeShadow999/CustomBadgesBD/blob/main/CustomBadges.plugin.js
  */
@@ -79,7 +79,7 @@ __cbDefine("html", function (exports, require) {
         };
         return `
             <style>
-            
+
                 #ub-dashboard-settings {
                     --ub-bg: #000000;
                     --ub-bg-card: #050505;
@@ -352,7 +352,6 @@ __cbDefine("html", function (exports, require) {
                     text-decoration: underline;
                 }
 
-            
                 #ub-dashboard-settings .ub-token-wrap {
                     position: relative;
                 }
@@ -365,11 +364,11 @@ __cbDefine("html", function (exports, require) {
                 #ub-dashboard-settings .ub-token-wrap input#ub-session-token {
                     color: transparent;
                     caret-color: var(--ub-text);
-                
+
                     height: 40px;
                     padding-top: 0;
                     padding-bottom: 0;
-                
+
                     font-family: var(--font-code, Consolas, "Courier New", monospace);
                     font-size: 14px;
                     letter-spacing: 0;
@@ -383,7 +382,7 @@ __cbDefine("html", function (exports, require) {
                     position: absolute;
                     inset: 0;
                     height: 40px;
-                
+
                     border: 1px solid transparent;
                     padding: 0 12px;
                     pointer-events: none;
@@ -402,7 +401,7 @@ __cbDefine("html", function (exports, require) {
                     overflow-wrap: normal;
                     word-break: keep-all;
                     word-wrap: normal;
-                
+
                 }
 
                 #ub-dashboard-settings .ub-token-overlay,
@@ -418,7 +417,7 @@ __cbDefine("html", function (exports, require) {
                     overflow-wrap: normal;
                     word-break: keep-all;
                     word-wrap: normal;
-                
+
                     width: 1ch;
                     height: 1em;
                     line-height: 1;
@@ -448,7 +447,6 @@ __cbDefine("html", function (exports, require) {
                     transform: translateY(0) scale(1) rotate(0deg);
                 }
 
-            
                 #ub-guidelines-backdrop {
                     display: none;
                     position: fixed;
@@ -468,8 +466,6 @@ __cbDefine("html", function (exports, require) {
                     pointer-events: auto;
                 }
 
-            
-            
                 .ub-guidelines-panel {
                     position: fixed;
                     top: 50%;
@@ -1241,6 +1237,14 @@ __cbDefine("html", function (exports, require) {
                     cursor: not-allowed;
                 }
 
+                #ub-budget-bar.ub-budget-warn {
+                    background: var(--ub-warning) !important;
+                }
+
+                #ub-budget-bar.ub-budget-danger {
+                    background: var(--ub-danger) !important;
+                }
+
                 #ub-dashboard-settings .ub-value-pill {
                     display: inline-block;
                     margin-left: 8px;
@@ -1285,7 +1289,7 @@ __cbDefine("html", function (exports, require) {
                     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
                     cursor: pointer;
                     transition: transform 80ms ease;
-                
+
                     margin-top: -6px;
                 }
 
@@ -1362,6 +1366,33 @@ __cbDefine("html", function (exports, require) {
                                 </div>
                             </div>
 
+                            <div class="ub-section" id="ub-write-budget-section">
+                                <div class="ub-section-head">
+                                    <div class="ub-section-icon">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><polyline points="12 6 12 12 16 14"/></svg>
+                                    </div>
+                                    <div class="ub-eyebrow">Write Budget</div>
+                                </div>
+                                <p class="ub-hint">Badge writes (set, switch, delete) are capped at 30 per account over a rolling 5-hour window to keep the server healthy. Reading badges never counts against this.</p>
+
+                                <div id="ub-budget-display" style="margin-bottom: 14px;">
+                                    <div id="ub-budget-bar-wrap" style="margin-bottom: 10px;">
+                                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+                                            <span id="ub-budget-label" style="font-size:13px; color:var(--ub-text-secondary);">Verify your account to see your write budget.</span>
+                                            <span id="ub-budget-count" style="font-size:13px; font-weight:700; color:var(--ub-text); font-variant-numeric:tabular-nums;"></span>
+                                        </div>
+                                        <div style="height:6px; border-radius:999px; background:rgba(255,255,255,0.08); overflow:hidden;">
+                                            <div id="ub-budget-bar" style="height:100%; border-radius:999px; width:100%; background:var(--ub-accent); transition:width 400ms cubic-bezier(0.4,0,0.2,1), background 400ms ease;"></div>
+                                        </div>
+                                    </div>
+                                    <div id="ub-budget-reset" style="font-size:12px; color:var(--ub-text-faint); display:none;"></div>
+                                </div>
+
+                                <div class="ub-btn-row" style="margin-bottom: 0;">
+                                    <button type="button" id="ub-refresh-budget" class="ub-btn">Refresh</button>
+                                </div>
+                            </div>
+
                             <div class="ub-section">
                                 <div class="ub-section-head">
                                     <div class="ub-section-icon">${icon.pencil}</div>
@@ -1405,7 +1436,6 @@ __cbDefine("html", function (exports, require) {
                                     </div>
                                 </div>
                             </div>
-
 
                             <div class="ub-section">
                                 <div class="ub-section-head">
@@ -2044,10 +2074,14 @@ __cbDefine("dashboardView", function (exports, require) {
 
 __cbDefine("wireSettings", function (exports, require) {
     exports.wireDashboardSettings = wireDashboardSettings;
+    exports.stopWriteBudgetCountdown = stopWriteBudgetCountdown;
     const bridge_1 = require("bridge");
     const types_1 = require("types");
     const dashboardView_1 = require("dashboardView");
     let packGuidelinesShownThisSession = false;
+
+    let budgetCountdownIntervalId = null;
+    let unsubscribeBudgetListener = null;
     function wireDashboardSettings(root) {
         const bridge = (0, bridge_1.getDashboardBridge)();
         if (!bridge) {
@@ -2074,6 +2108,11 @@ __cbDefine("wireSettings", function (exports, require) {
         const sessionToken = $("ub-session-token");
         const sessionTokenOverlay = $("ub-session-token-overlay-inner");
         const revokeTokenBtn = $("ub-revoke-token");
+        const budgetLabel = $("ub-budget-label");
+        const budgetCount = $("ub-budget-count");
+        const budgetBar = $("ub-budget-bar");
+        const budgetReset = $("ub-budget-reset");
+        const refreshBudgetBtn = $("ub-refresh-budget");
         const badgeModeInput = $("ub-badge-mode");
         const selectedPresetInput = $("ub-selected-preset");
         const iconSize = $("ub-icon-size");
@@ -2564,6 +2603,57 @@ __cbDefine("wireSettings", function (exports, require) {
                 });
             });
         }
+
+        function renderBudgetDisplay(budget) {
+            if (!budgetLabel || !budgetCount || !budgetBar || !budgetReset)
+                return;
+            const verified = !!bridge.hasSessionToken?.();
+            if (refreshBudgetBtn)
+                refreshBudgetBtn.disabled = !verified || refreshBudgetBtn.dataset.loading === "true";
+            if (!verified) {
+                budgetLabel.textContent = "Verify your Discord account to see your write budget.";
+                budgetCount.textContent = "";
+                budgetBar.style.width = "100%";
+                budgetBar.classList.remove("ub-budget-warn", "ub-budget-danger");
+                budgetReset.style.display = "none";
+                return;
+            }
+            const hasReading = budget && typeof budget.remaining === "number";
+            if (!hasReading) {
+                budgetLabel.textContent = "Writes Remaining";
+                budgetCount.textContent = "—";
+                budgetBar.style.width = "100%";
+                budgetBar.classList.remove("ub-budget-warn", "ub-budget-danger");
+                budgetReset.style.display = "none";
+                return;
+            }
+            const limit = budget.limit ?? bridge.WRITE_BUDGET_MAX_WRITES ?? 30;
+            const remaining = Math.max(0, budget.remaining);
+            const pct = limit > 0 ? Math.max(0, Math.min(100, (remaining / limit) * 100)) : 0;
+            const exhausted = remaining === 0;
+            const low = !exhausted && remaining <= Math.ceil(limit * 0.2);
+            budgetLabel.textContent = exhausted ? "Write budget exhausted" : "Writes Remaining";
+            budgetCount.textContent = `${remaining} / ${limit}`;
+            budgetBar.style.width = `${pct}%`;
+            budgetBar.classList.toggle("ub-budget-danger", exhausted);
+            budgetBar.classList.toggle("ub-budget-warn", low);
+            if (budget.resetAt) {
+                const msLeft = budget.resetAt - Date.now();
+                if (msLeft > 0) {
+                    const h = Math.floor(msLeft / 3_600_000);
+                    const m = Math.floor((msLeft % 3_600_000) / 60_000);
+                    budgetReset.textContent = `Resets in ${h > 0 ? `${h}h ` : ""}${m}m`;
+                    budgetReset.style.display = "block";
+                } else {
+
+                    budgetReset.textContent = "Refreshing…";
+                    budgetReset.style.display = "block";
+                    bridge.refreshWriteBudget();
+                }
+            } else {
+                budgetReset.style.display = "none";
+            }
+        }
         function syncFromStore() {
             if (apiBaseUrl)
                 apiBaseUrl.value = settings.store.apiBaseUrl ?? "";
@@ -2577,6 +2667,7 @@ __cbDefine("wireSettings", function (exports, require) {
             buildTokenChars(tokenMasked);
             if (revokeTokenBtn)
                 revokeTokenBtn.disabled = !settings.store.sessionToken;
+            renderBudgetDisplay(bridge.getWriteBudget?.());
             renderMyBadgesList();
             const modeVal = settings.store.badgeMode ?? "original";
             if (badgeModeInput)
@@ -2639,6 +2730,31 @@ __cbDefine("wireSettings", function (exports, require) {
             updatePreview();
         }
         syncFromStore();
+
+        if (unsubscribeBudgetListener)
+            unsubscribeBudgetListener();
+        unsubscribeBudgetListener = bridge.subscribeWriteBudget(budget => renderBudgetDisplay(budget));
+        if (bridge.hasSessionToken?.())
+            bridge.refreshWriteBudget();
+        if (budgetCountdownIntervalId)
+            clearInterval(budgetCountdownIntervalId);
+        budgetCountdownIntervalId = setInterval(() => {
+            renderBudgetDisplay(bridge.getWriteBudget?.());
+        }, 30000);
+        refreshBudgetBtn?.addEventListener("click", () => {
+            if (refreshBudgetBtn.dataset.loading === "true")
+                return;
+            refreshBudgetBtn.dataset.loading = "true";
+            refreshBudgetBtn.disabled = true;
+            const originalLabel = refreshBudgetBtn.textContent;
+            refreshBudgetBtn.textContent = "Refreshing...";
+            bridge.refreshWriteBudget().finally(() => {
+                refreshBudgetBtn.dataset.loading = "false";
+                refreshBudgetBtn.disabled = !bridge.hasSessionToken?.();
+                refreshBudgetBtn.textContent = originalLabel;
+            });
+        });
+
         apiBaseUrl?.addEventListener("change", () => {
             settings.store.apiBaseUrl = apiBaseUrl.value;
         });
@@ -2693,6 +2809,9 @@ __cbDefine("wireSettings", function (exports, require) {
             settings.store.sessionToken = sessionToken.value;
             if (revokeTokenBtn)
                 revokeTokenBtn.disabled = !settings.store.sessionToken;
+            renderBudgetDisplay(bridge.getWriteBudget?.());
+            if (settings.store.sessionToken)
+                bridge.refreshWriteBudget();
         });
         revokeTokenBtn?.addEventListener("click", async () => {
             if (!settings.store.sessionToken || revokeTokenBtn.disabled)
@@ -2709,6 +2828,17 @@ __cbDefine("wireSettings", function (exports, require) {
                     revokeTokenBtn.textContent = originalLabel;
             }
         });
+    }
+
+    function stopWriteBudgetCountdown() {
+        if (budgetCountdownIntervalId) {
+            clearInterval(budgetCountdownIntervalId);
+            budgetCountdownIntervalId = null;
+        }
+        if (unsubscribeBudgetListener) {
+            unsubscribeBudgetListener();
+            unsubscribeBudgetListener = null;
+        }
     }
 
 });
@@ -2817,6 +2947,9 @@ module.exports = class CustomBadges {
         this._pendingContainers = new WeakMap();
         this._rowHealers = new Map();
         this._patches = [];
+
+        this._writeBudget = null; 
+        this._writeBudgetListeners = new Set();
 
         this.React = BdApi.React;
         this.h = BdApi.React.createElement;
@@ -2937,7 +3070,13 @@ module.exports = class CustomBadges {
                 verifyAccount: () => this.verifyDiscordAccount(),
                 revokeSessionToken: () => this.revokeSessionToken(),
                 switchToBadge: id => this.switchToBadge(id),
-                deleteBadgeSlot: id => this.deleteBadgeSlot(id)
+                deleteBadgeSlot: id => this.deleteBadgeSlot(id),
+
+                hasSessionToken: () => !!this.getSetting("sessionToken"),
+                WRITE_BUDGET_MAX_WRITES: this.WRITE_BUDGET_MAX_WRITES,
+                getWriteBudget: () => this.getWriteBudget(),
+                refreshWriteBudget: () => this.refreshWriteBudget(),
+                subscribeWriteBudget: fn => this.subscribeWriteBudget(fn)
             });
 
             this._dashTypes = __cbRequire("types");
@@ -3378,6 +3517,7 @@ module.exports = class CustomBadges {
     REQUEST_TIMEOUT_MS = 10_000;
     RATE_LIMIT_WINDOW_MS = 10_000;
     RATE_LIMIT_MAX_REQUESTS = 50;
+    WRITE_BUDGET_MAX_WRITES = 30; 
 
     apiBase() {
         return this.getSetting("apiBaseUrl") || this.DEFAULT_API_BASE;
@@ -3461,7 +3601,9 @@ module.exports = class CustomBadges {
             headers: this.authHeaders(token),
             body: JSON.stringify({ action: "setBadge", userId, badgeId, imageUrl, description, style })
         });
-        return this.parseJsonOrThrow(res);
+        const data = await this.parseJsonOrThrow(res);
+        if (data && data.writeBudget) this.setWriteBudget(data.writeBudget);
+        return data;
     }
 
     async apiSetActiveBadge(userId, badgeId) {
@@ -3472,7 +3614,9 @@ module.exports = class CustomBadges {
             headers: this.authHeaders(token),
             body: JSON.stringify({ action: "setActiveBadge", userId, badgeId })
         });
-        return this.parseJsonOrThrow(res);
+        const data = await this.parseJsonOrThrow(res);
+        if (data && data.writeBudget) this.setWriteBudget(data.writeBudget);
+        return data;
     }
 
     async apiDeleteBadge(userId, badgeId) {
@@ -3483,7 +3627,55 @@ module.exports = class CustomBadges {
             headers: this.authHeaders(token),
             body: JSON.stringify({ action: "deleteBadge", userId, badgeId })
         });
-        return this.parseJsonOrThrow(res);
+        const data = await this.parseJsonOrThrow(res);
+        if (data && data.writeBudget) this.setWriteBudget(data.writeBudget);
+        return data;
+    }
+
+    async apiGetWriteBudget() {
+        const token = this.requireSessionToken(this.getSetting("sessionToken"));
+        const res = await this.fetchWithTimeout(`${this.apiBase()}/self/writes`, {
+            method: "GET",
+            headers: this.authHeaders(token)
+        });
+        return this.parseJsonOrThrow(res); 
+    }
+
+    async refreshWriteBudget() {
+        try {
+            const budget = await this.apiGetWriteBudget();
+            this.setWriteBudget(budget);
+            return budget;
+        } catch (e) {
+
+            return this._writeBudget;
+        }
+    }
+    setWriteBudget(budget) {
+        this._writeBudget = budget;
+        this._writeBudgetListeners.forEach(fn => { try { fn(budget); } catch { } });
+    }
+
+    getWriteBudget() {
+        return this._writeBudget;
+    }
+    subscribeWriteBudget(fn) {
+        this._writeBudgetListeners.add(fn);
+        return () => this._writeBudgetListeners.delete(fn);
+    }
+    formatWriteBudgetText(budget) {
+        if (!budget || typeof budget.remaining !== "number") return "Verify your account to see your write budget.";
+        const limit = budget.limit ?? this.WRITE_BUDGET_MAX_WRITES;
+        let resetPart = "";
+        if (budget.resetAt) {
+            const msLeft = budget.resetAt - Date.now();
+            if (msLeft > 0) {
+                const h = Math.floor(msLeft / 3_600_000);
+                const m = Math.floor((msLeft % 3_600_000) / 60_000);
+                resetPart = ` · resets in ${h > 0 ? `${h}h ` : ""}${m}m`;
+            }
+        }
+        return `${budget.remaining} / ${limit} writes remaining${resetPart}`;
     }
 
     async apiRevokeToken() {
@@ -4349,6 +4541,103 @@ module.exports = class CustomBadges {
         );
     }
 
+    WriteBudgetPanel() {
+        const h = this.h;
+        const React = this.React;
+        const self = this;
+
+        const [budget, setBudget] = React.useState(self.getWriteBudget());
+        const [loading, setLoading] = React.useState(false);
+        const [verified, setVerified] = React.useState(!!self.getSetting("sessionToken"));
+        const [, tick] = React.useReducer(x => x + 1, 0);
+
+        React.useEffect(() => {
+
+            const unsubscribe = self.subscribeWriteBudget(setBudget);
+
+            if (self.getSetting("sessionToken")) self.refreshWriteBudget();
+            return unsubscribe;
+        }, []);
+
+        React.useEffect(() => {
+
+            if (verified) self.refreshWriteBudget();
+        }, [verified]);
+
+        React.useEffect(() => {
+
+            const intervalId = setInterval(() => {
+                const nowVerified = !!self.getSetting("sessionToken");
+                if (nowVerified !== verified) {
+                    setVerified(nowVerified);
+                    return;
+                }
+                if (budget && budget.resetAt && budget.resetAt - Date.now() <= 0) {
+                    self.refreshWriteBudget();
+                } else {
+                    tick();
+                }
+            }, 1000);
+            return () => clearInterval(intervalId);
+        }, [budget, verified]);
+
+        const onRefresh = () => {
+            setLoading(true);
+            self.refreshWriteBudget().finally(() => setLoading(false));
+        };
+
+        const refreshBtn = self.Button(loading ? "Refreshing..." : "Refresh", onRefresh, { disabled: loading || !verified });
+
+        if (!verified) {
+            return h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 } },
+                h("span", { style: { fontSize: 13, opacity: 0.7 } }, "Verify your Discord account to see your write budget."),
+                refreshBtn
+            );
+        }
+
+        const hasReading = budget && typeof budget.remaining === "number";
+        if (!hasReading) {
+            return h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 } },
+                h("span", { style: { fontSize: 13, opacity: 0.7 } }, "Writes Remaining"),
+                refreshBtn
+            );
+        }
+
+        const limit = budget.limit ?? self.WRITE_BUDGET_MAX_WRITES ?? 30;
+        const remaining = Math.max(0, budget.remaining);
+        const pct = limit > 0 ? Math.max(0, Math.min(100, (remaining / limit) * 100)) : 0;
+        const exhausted = remaining === 0;
+        const low = !exhausted && remaining <= Math.ceil(limit * 0.2);
+        const barColor = exhausted ? "#DA373C" : (low ? "#F0B232" : "#5865F2");
+
+        let resetText = "";
+        if (budget.resetAt) {
+            const msLeft = budget.resetAt - Date.now();
+            if (msLeft > 0) {
+                const hrs = Math.floor(msLeft / 3_600_000);
+                const mins = Math.floor((msLeft % 3_600_000) / 60_000);
+                resetText = `Resets in ${hrs > 0 ? `${hrs}h ` : ""}${mins}m`;
+            } else {
+                resetText = "Refreshing…";
+            }
+        }
+
+        return h("div", null,
+            h("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 } },
+                h("span", { style: { fontSize: 13, fontWeight: exhausted ? 600 : 400, color: exhausted ? "#DA373C" : "inherit", opacity: exhausted ? 1 : 0.85 } },
+                    exhausted ? "Write budget exhausted" : "Writes Remaining"),
+                h("span", { style: { fontSize: 13, fontWeight: 700, fontVariantNumeric: "tabular-nums" } }, `${remaining} / ${limit}`)
+            ),
+            h("div", { style: { height: 6, borderRadius: 999, background: "rgba(255,255,255,0.08)", overflow: "hidden", marginBottom: 8 } },
+                h("div", { style: { height: "100%", borderRadius: 999, width: `${pct}%`, background: barColor, transition: "width 400ms cubic-bezier(0.4,0,0.2,1), background 400ms ease" } })
+            ),
+            h("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" } },
+                resetText ? h("span", { style: { fontSize: 12, opacity: 0.6 } }, resetText) : h("span", null),
+                refreshBtn
+            )
+        );
+    }
+
     SettingsRoot() {
         const h = this.h;
         const React = this.React;
@@ -4374,6 +4663,12 @@ module.exports = class CustomBadges {
             self.Field("Verify Discord Account", null, self.Button("Verify Discord Account", () => self.verifyDiscordAccount())),
             self.Field("Session Token", "Paste the session token shown after verifying your account here.", self.h(self.SessionTokenInput.bind(self))),
             self.Field("Revoke Token", "Revoke your current session token immediately.", self.h(self.RevokeTokenButton.bind(self))),
+
+            self.Divider(),
+            h("h3", null, "Write Budget"),
+            h("p", { style: { fontSize: 12, opacity: 0.75, marginBottom: 12 } },
+                "Badge writes (set/switch/delete) are capped per account over a rolling window to keep the server healthy. This doesn't affect reading badges."),
+            h(self.WriteBudgetPanel.bind(self)),
 
             self.Divider(),
             h("h3", null, "Edit Active Badge"),
