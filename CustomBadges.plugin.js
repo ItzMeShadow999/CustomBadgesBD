@@ -2,9 +2,9 @@
  * @name CustomBadges
  * @author ItzMeShadow999
  * @description Adds a self-hosted custom badge with a hover tooltip to user profiles, visible to anyone else running this plugin. Ported from the Vencord CustomBadges plugin to the BetterDiscord API.
- * @version 1.0.4
- * @website https://github.com/ItzMeShadow999/CustomBadges
- * @source https://github.com/ItzMeShadow999/CustomBadges/blob/CustomBadges-React
+ * @version 1.2.4
+ * @website https://custombadges.pages.dev/
+ * @source https://github.com/ItzMeShadow999/CustomBadgesBD/blob/main/CustomBadges.plugin.js
  */
 
 const __cbModules = {};
