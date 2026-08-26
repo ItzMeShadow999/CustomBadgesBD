@@ -79,7 +79,7 @@ __cbDefine("html", function (exports, require) {
         };
         return `
             <style>
-
+            
                 #ub-dashboard-settings {
                     --ub-bg: #000000;
                     --ub-bg-card: #050505;
@@ -352,6 +352,7 @@ __cbDefine("html", function (exports, require) {
                     text-decoration: underline;
                 }
 
+            
                 #ub-dashboard-settings .ub-token-wrap {
                     position: relative;
                 }
@@ -364,11 +365,11 @@ __cbDefine("html", function (exports, require) {
                 #ub-dashboard-settings .ub-token-wrap input#ub-session-token {
                     color: transparent;
                     caret-color: var(--ub-text);
-
+                
                     height: 40px;
                     padding-top: 0;
                     padding-bottom: 0;
-
+                
                     font-family: var(--font-code, Consolas, "Courier New", monospace);
                     font-size: 14px;
                     letter-spacing: 0;
@@ -382,7 +383,7 @@ __cbDefine("html", function (exports, require) {
                     position: absolute;
                     inset: 0;
                     height: 40px;
-
+                
                     border: 1px solid transparent;
                     padding: 0 12px;
                     pointer-events: none;
@@ -401,7 +402,7 @@ __cbDefine("html", function (exports, require) {
                     overflow-wrap: normal;
                     word-break: keep-all;
                     word-wrap: normal;
-
+                
                 }
 
                 #ub-dashboard-settings .ub-token-overlay,
@@ -417,7 +418,7 @@ __cbDefine("html", function (exports, require) {
                     overflow-wrap: normal;
                     word-break: keep-all;
                     word-wrap: normal;
-
+                
                     width: 1ch;
                     height: 1em;
                     line-height: 1;
@@ -447,6 +448,7 @@ __cbDefine("html", function (exports, require) {
                     transform: translateY(0) scale(1) rotate(0deg);
                 }
 
+            
                 #ub-guidelines-backdrop {
                     display: none;
                     position: fixed;
@@ -466,6 +468,8 @@ __cbDefine("html", function (exports, require) {
                     pointer-events: auto;
                 }
 
+            
+            
                 .ub-guidelines-panel {
                     position: fixed;
                     top: 50%;
@@ -1289,7 +1293,7 @@ __cbDefine("html", function (exports, require) {
                     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
                     cursor: pointer;
                     transition: transform 80ms ease;
-
+                
                     margin-top: -6px;
                 }
 
@@ -1406,9 +1410,13 @@ __cbDefine("html", function (exports, require) {
                                     <div class="ub-label">My Badge Image Url</div>
                                     <input id="ub-badge-image-url" type="text" class="ub-input" placeholder="https://..." />
                                 </div>
-                                <div class="ub-field" style="margin-bottom: 0;">
+                                <div class="ub-field" style="margin-bottom: 16px;">
                                     <div class="ub-label">My Badge Name</div>
                                     <input id="ub-badge-name" type="text" class="ub-input" placeholder="Your badge name" />
+                                </div>
+                                <p class="ub-hint" style="margin-bottom: 8px;">Changes above (and in Style Studio) are staged locally and won't be visible to anyone else until you apply them.</p>
+                                <div class="ub-btn-row" style="margin-bottom: 0;">
+                                    <button type="button" id="ub-apply-badge-changes" class="ub-btn ub-btn-primary">Apply Badge Changes</button>
                                 </div>
                             </div>
                             <div class="ub-section">
@@ -1436,6 +1444,7 @@ __cbDefine("html", function (exports, require) {
                                     </div>
                                 </div>
                             </div>
+
 
                             <div class="ub-section">
                                 <div class="ub-section-head">
@@ -1666,6 +1675,10 @@ __cbDefine("html", function (exports, require) {
                                         <button type="button" class="ub-choice" data-value="slide">Slide</button>
                                     </div>
                                     <input type="hidden" id="ub-popup-anim" value="fade" />
+                                </div>
+                                <p class="ub-hint" style="margin: 12px 0 8px;">Style changes above won't be visible to anyone else until you apply them.</p>
+                                <div class="ub-btn-row" style="margin-bottom: 0;">
+                                    <button type="button" id="ub-apply-badge-changes-style" class="ub-btn ub-btn-primary">Apply Badge Changes</button>
                                 </div>
                             </div>
                             <div class="ub-section" style="margin-bottom: 0;">
@@ -2079,7 +2092,9 @@ __cbDefine("wireSettings", function (exports, require) {
     const types_1 = require("types");
     const dashboardView_1 = require("dashboardView");
     let packGuidelinesShownThisSession = false;
-
+    // Module-scoped (not per-call) so re-opening the dashboard - which tears
+    // down and rebuilds the DOM each time - doesn't stack up duplicate
+    // countdown timers or duplicate subscribeWriteBudget listeners.
     let budgetCountdownIntervalId = null;
     let unsubscribeBudgetListener = null;
     function wireDashboardSettings(root) {
@@ -2409,7 +2424,6 @@ __cbDefine("wireSettings", function (exports, require) {
         wireSwitch(appendTagSwitch, val => {
             settings.store.appendTag = val;
             updatePreview();
-            bridge.publishBadge();
         });
         wireSwitch(hideOwnBadgeSwitch, val => {
             settings.store.hideOwnBadge = val;
@@ -2429,7 +2443,6 @@ __cbDefine("wireSettings", function (exports, require) {
         wireChoiceGroup("ub-icon-shape-group", "ub-icon-shape", val => {
             settings.store.badgeIconShape = val;
             updatePreview();
-            bridge.publishBadge();
         });
         iconSize?.addEventListener("input", () => {
             if (iconSizeValue)
@@ -2438,12 +2451,10 @@ __cbDefine("wireSettings", function (exports, require) {
         iconSize?.addEventListener("change", () => {
             settings.store.badgeIconSize = Number(iconSize.value);
             updatePreview();
-            bridge.publishBadge();
         });
         wireChoiceGroup("ub-hover-effect-group", "ub-hover-effect", val => {
             settings.store.badgeHoverEffect = val;
             updateGlowFieldState();
-            bridge.publishBadge();
         });
         glowColor?.addEventListener("input", () => {
             if (glowColorHex)
@@ -2451,13 +2462,11 @@ __cbDefine("wireSettings", function (exports, require) {
         });
         glowColor?.addEventListener("change", () => {
             settings.store.badgeGlowColor = glowColor.value;
-            bridge.publishBadge();
         });
         wireChoiceGroup("ub-bg-mode-group", "ub-bg-mode", val => {
             settings.store.popupBackgroundMode = val;
             updateGradientFieldsState();
             updatePreview();
-            bridge.publishBadge();
         });
         gradientMain?.addEventListener("input", () => {
             if (gradientMainHex)
@@ -2466,7 +2475,6 @@ __cbDefine("wireSettings", function (exports, require) {
         gradientMain?.addEventListener("change", () => {
             settings.store.popupGradientMain = gradientMain.value;
             updatePreview();
-            bridge.publishBadge();
         });
         gradientSecondary?.addEventListener("input", () => {
             if (gradientSecondaryHex)
@@ -2475,7 +2483,6 @@ __cbDefine("wireSettings", function (exports, require) {
         gradientSecondary?.addEventListener("change", () => {
             settings.store.popupGradientSecondary = gradientSecondary.value;
             updatePreview();
-            bridge.publishBadge();
         });
         nameColor?.addEventListener("input", () => {
             if (nameColorHex)
@@ -2484,11 +2491,9 @@ __cbDefine("wireSettings", function (exports, require) {
         nameColor?.addEventListener("change", () => {
             settings.store.badgeNameColor = nameColor.value;
             updatePreview();
-            bridge.publishBadge();
         });
         wireChoiceGroup("ub-popup-anim-group", "ub-popup-anim", val => {
             settings.store.popupAnimationStyle = val;
-            bridge.publishBadge();
         });
         const previewEmpties = Array.from(root.querySelectorAll(".ub-preview-empty"));
         const previewContents = Array.from(root.querySelectorAll(".ub-preview-content"));
@@ -2603,7 +2608,10 @@ __cbDefine("wireSettings", function (exports, require) {
                 });
             });
         }
-
+        // Renders the write-budget section from whatever reading is passed
+        // in (the cached one, or a freshly fetched one) - never fetches
+        // itself, so it's safe to call on every store sync / tick without
+        // spamming the read-only /self/writes endpoint.
         function renderBudgetDisplay(budget) {
             if (!budgetLabel || !budgetCount || !budgetBar || !budgetReset)
                 return;
@@ -2645,7 +2653,9 @@ __cbDefine("wireSettings", function (exports, require) {
                     budgetReset.textContent = `Resets in ${h > 0 ? `${h}h ` : ""}${m}m`;
                     budgetReset.style.display = "block";
                 } else {
-
+                    // Window has rolled over server-side - pull a fresh
+                    // reading so the newly available writes show up without
+                    // the user having to reopen the dashboard.
                     budgetReset.textContent = "Refreshing…";
                     budgetReset.style.display = "block";
                     bridge.refreshWriteBudget();
@@ -2731,6 +2741,11 @@ __cbDefine("wireSettings", function (exports, require) {
         }
         syncFromStore();
 
+        // Write budget: subscribe so the section updates the moment a
+        // setBadge/setActiveBadge/deleteBadge call reports fresh budget
+        // data (see setWriteBudget), do one initial read-only fetch to
+        // populate it on open, and tick the "resets in" text down locally
+        // without hitting the network every render.
         if (unsubscribeBudgetListener)
             unsubscribeBudgetListener();
         unsubscribeBudgetListener = bridge.subscribeWriteBudget(budget => renderBudgetDisplay(budget));
@@ -2762,14 +2777,31 @@ __cbDefine("wireSettings", function (exports, require) {
         badgeImageUrl?.addEventListener("change", () => {
             settings.store.myBadgeImageUrl = badgeImageUrl.value;
             updatePreview();
-            bridge.publishBadge();
         });
         badgeName?.addEventListener("input", updatePreview);
         badgeName?.addEventListener("change", () => {
             settings.store.myBadgeName = badgeName.value;
             updatePreview();
-            bridge.publishBadge();
         });
+        function applyBadgeChanges(btn) {
+            if (!btn || btn.disabled) {
+                bridge.publishBadge();
+                return;
+            }
+            btn.disabled = true;
+            const originalLabel = btn.textContent;
+            btn.textContent = "Applying...";
+            try {
+                bridge.publishBadge();
+            } finally {
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.textContent = originalLabel;
+                }, 400);
+            }
+        }
+        $("ub-apply-badge-changes")?.addEventListener("click", e => applyBadgeChanges(e.currentTarget));
+        $("ub-apply-badge-changes-style")?.addEventListener("click", e => applyBadgeChanges(e.currentTarget));
         $("ub-share-badge")?.addEventListener("click", () => bridge.shareMyBadge());
         $("ub-revert-badge")?.addEventListener("click", () => {
             bridge.revertBadge();
@@ -2829,7 +2861,9 @@ __cbDefine("wireSettings", function (exports, require) {
             }
         });
     }
-
+    // Called from stopDashboard() so disabling/reloading the plugin doesn't
+    // leave the countdown timer or the write-budget subscription running
+    // against a torn-down dashboard.
     function stopWriteBudgetCountdown() {
         if (budgetCountdownIntervalId) {
             clearInterval(budgetCountdownIntervalId);
@@ -2948,7 +2982,11 @@ module.exports = class CustomBadges {
         this._rowHealers = new Map();
         this._patches = [];
 
-        this._writeBudget = null; 
+        // In-memory only (not persisted) - last known write-budget reading,
+        // shown in the dashboard's "Write Budget" section and the settings
+        // menu. Refreshed on demand (dashboard/settings open, refresh
+        // button) and opportunistically after every successful write.
+        this._writeBudget = null; // { remaining, limit, resetAt } | null
         this._writeBudgetListeners = new Set();
 
         this.React = BdApi.React;
@@ -3071,7 +3109,10 @@ module.exports = class CustomBadges {
                 revokeSessionToken: () => this.revokeSessionToken(),
                 switchToBadge: id => this.switchToBadge(id),
                 deleteBadgeSlot: id => this.deleteBadgeSlot(id),
-
+                // Write-budget pass-throughs so the dashboard (vanilla DOM,
+                // running through this bridge) reads from the exact same
+                // shared state as the Settings menu (React, calls these
+                // directly on `this`) instead of a second, divergent copy.
                 hasSessionToken: () => !!this.getSetting("sessionToken"),
                 WRITE_BUDGET_MAX_WRITES: this.WRITE_BUDGET_MAX_WRITES,
                 getWriteBudget: () => this.getWriteBudget(),
@@ -3517,7 +3558,7 @@ module.exports = class CustomBadges {
     REQUEST_TIMEOUT_MS = 10_000;
     RATE_LIMIT_WINDOW_MS = 10_000;
     RATE_LIMIT_MAX_REQUESTS = 50;
-    WRITE_BUDGET_MAX_WRITES = 30; 
+    WRITE_BUDGET_MAX_WRITES = 30; // fallback label only - the server's `limit` field is authoritative
 
     apiBase() {
         return this.getSetting("apiBaseUrl") || this.DEFAULT_API_BASE;
@@ -3632,22 +3673,29 @@ module.exports = class CustomBadges {
         return data;
     }
 
+    // Read-only - doesn't consume a write. Used to populate the "writes
+    // remaining" display in the dashboard and settings menu.
     async apiGetWriteBudget() {
         const token = this.requireSessionToken(this.getSetting("sessionToken"));
         const res = await this.fetchWithTimeout(`${this.apiBase()}/self/writes`, {
             method: "GET",
             headers: this.authHeaders(token)
         });
-        return this.parseJsonOrThrow(res); 
+        return this.parseJsonOrThrow(res); // { remaining, limit, windowHours, resetAt }
     }
 
+    // Central place that both the dashboard (vanilla DOM) and the settings
+    // menu (React) read from. Fetches a fresh reading, caches it, and
+    // notifies anyone listening (see subscribeWriteBudget) so both surfaces
+    // stay in sync without polling each other.
     async refreshWriteBudget() {
         try {
             const budget = await this.apiGetWriteBudget();
             this.setWriteBudget(budget);
             return budget;
         } catch (e) {
-
+            // Not verified yet, or a network hiccup - leave any previous
+            // reading in place rather than clobbering it with an error state.
             return this._writeBudget;
         }
     }
@@ -3655,7 +3703,9 @@ module.exports = class CustomBadges {
         this._writeBudget = budget;
         this._writeBudgetListeners.forEach(fn => { try { fn(budget); } catch { } });
     }
-
+    // Simple accessor for the cached reading - both the dashboard (via the
+    // bridge) and the Settings menu (directly) read through this instead of
+    // touching _writeBudget so there's one obvious getter for the shared state.
     getWriteBudget() {
         return this._writeBudget;
     }
@@ -4545,27 +4595,39 @@ module.exports = class CustomBadges {
         const h = this.h;
         const React = this.React;
         const self = this;
-
+        // Read the cached reading first (same object the dashboard reads),
+        // no network call yet.
         const [budget, setBudget] = React.useState(self.getWriteBudget());
         const [loading, setLoading] = React.useState(false);
         const [verified, setVerified] = React.useState(!!self.getSetting("sessionToken"));
         const [, tick] = React.useReducer(x => x + 1, 0);
 
         React.useEffect(() => {
-
+            // Kept in sync with setBadge/setActiveBadge/deleteBadge (and the
+            // dashboard's own refreshes) via the shared listener set - both
+            // surfaces always render the same cached value.
             const unsubscribe = self.subscribeWriteBudget(setBudget);
-
+            // /self/writes is read-only and never consumes a write, so it's
+            // safe to call once on open to make sure the cached reading
+            // (which may be stale or absent) is current.
             if (self.getSetting("sessionToken")) self.refreshWriteBudget();
             return unsubscribe;
         }, []);
 
         React.useEffect(() => {
-
+            // The moment verification finishes (token pasted/received
+            // elsewhere in Settings) pull one read-only reading so this
+            // panel doesn't sit on the "verify to see your budget" state
+            // until something else happens to re-render it.
             if (verified) self.refreshWriteBudget();
         }, [verified]);
 
         React.useEffect(() => {
-
+            // Tick the "resets in" text down locally once a second instead
+            // of polling the server, and pick up sessionToken changes made
+            // elsewhere in Settings. Once the window has actually rolled
+            // over, pull one fresh reading so the restored writes show up
+            // without the user having to reopen Settings.
             const intervalId = setInterval(() => {
                 const nowVerified = !!self.getSetting("sessionToken");
                 if (nowVerified !== verified) {
@@ -4674,15 +4736,21 @@ module.exports = class CustomBadges {
             h("h3", null, "Edit Active Badge"),
             self.Field("Api Base Url", "Worker URL used to fetch/set badges.", self.TextField(self.getSetting("apiBaseUrl"), self.DEFAULT_API_BASE, v => { self.setSetting("apiBaseUrl", v); forceUpdate(); })),
             self.Field("My Badge Image Url", "Must be hosted on i.imgur.com, i.ibb.co, i.pinimg.com, files.catbox.moe, cdn.discordapp.com, or media.discordapp.net.",
-                self.TextField(self.getSetting("myBadgeImageUrl"), "", v => { self.setSetting("myBadgeImageUrl", v); if (!self.suppressPublishOnChange) self.updateMyBadgeFromSettings(); forceUpdate(); })),
+                self.TextField(self.getSetting("myBadgeImageUrl"), "", v => { self.setSetting("myBadgeImageUrl", v); forceUpdate(); })),
             self.Field("My Badge Name", "Shown in the hover tooltip.",
-                self.TextField(self.getSetting("myBadgeName"), "", v => { self.setSetting("myBadgeName", v); if (!self.suppressPublishOnChange) self.updateMyBadgeFromSettings(); forceUpdate(); })),
+                self.TextField(self.getSetting("myBadgeName"), "", v => { self.setSetting("myBadgeName", v); forceUpdate(); })),
 
             self.Divider(),
             h("h3", null, "Live Preview"),
             h(self.BadgePreview.bind(self)),
 
             self.Divider(),
+            h("p", { style: { fontSize: 12, opacity: 0.75, marginBottom: 12 } },
+                "Changes to your badge image, name, and style below are staged locally and won't be visible to anyone else until you hit \"Apply Badge Changes\"."),
+            self.Row([
+                self.Button("Apply Badge Changes", () => { self.updateMyBadgeFromSettings(); forceUpdate(); }, { primary: true })
+            ], { marginBottom: 16 }),
+
             h("h3", null, "Quick Actions"),
             self.Row([
                 self.Button("Share Badge", () => self.shareMyBadge(), { disabled: !hasBadge }),
@@ -4723,26 +4791,31 @@ module.exports = class CustomBadges {
             self.Divider(),
             h("h3", null, "Behavior"),
             self.SwitchField("Show Tooltip", "Show a small tooltip when hovering a custom badge.", self.getSetting("showTooltip"), v => { self.setSetting("showTooltip", v); forceUpdate(); }),
-            self.SwitchField("Append Tag", "Add a [BD] suffix after your badge name. Seen by everyone who views your badge.", self.getSetting("appendTag"), v => { self.setSetting("appendTag", v); if (!self.suppressPublishOnChange) self.updateMyBadgeFromSettings(); forceUpdate(); }),
+            self.SwitchField("Append Tag", "Add a [BD] suffix after your badge name. Seen by everyone who views your badge.", self.getSetting("appendTag"), v => { self.setSetting("appendTag", v); forceUpdate(); }),
             self.SwitchField("Hide Own Badge", "Don't show my own badge to myself when viewing my own profile.", self.getSetting("hideOwnBadge"), v => { self.setSetting("hideOwnBadge", v); forceUpdate(); }),
             self.SwitchField("Restrict to Mutual Servers", "Only show custom badges on profiles of people who share at least one server with you.", self.getSetting("restrictToMutualGuilds"), v => { self.setSetting("restrictToMutualGuilds", v); forceUpdate(); }),
 
             self.Divider(),
             h("h3", null, "Badge Style"),
             self.Field("Badge Name Color", "Text color for your badge name (hex).",
-                self.TextField(self.getSetting("badgeNameColor"), "#ffffff", v => { self.setSetting("badgeNameColor", v); if (!self.suppressPublishOnChange) self.updateMyBadgeFromSettings(); forceUpdate(); })),
+                self.TextField(self.getSetting("badgeNameColor"), "#ffffff", v => { self.setSetting("badgeNameColor", v); forceUpdate(); })),
             self.Field("Badge Icon Size", "Size in pixels of your badge icon in the badge row.",
-                self.TextField(String(self.getSetting("badgeIconSize")), "22", v => { const n = Number(v); self.setSetting("badgeIconSize", Number.isNaN(n) ? self.DEFAULTS.badgeIconSize : n); if (!self.suppressPublishOnChange) self.updateMyBadgeFromSettings(); forceUpdate(); })),
+                self.TextField(String(self.getSetting("badgeIconSize")), "22", v => { const n = Number(v); self.setSetting("badgeIconSize", Number.isNaN(n) ? self.DEFAULTS.badgeIconSize : n); forceUpdate(); })),
             self.Field("Badge Icon Shape", "Shape of your badge icon in the badge row.",
                 self.SelectField(self.getSetting("badgeIconShape"), [{ label: "Circle", value: "circle" }, { label: "Rounded square", value: "rounded" }, { label: "Square", value: "square" }],
-                    v => { self.setSetting("badgeIconShape", v); if (!self.suppressPublishOnChange) self.updateMyBadgeFromSettings(); forceUpdate(); })),
+                    v => { self.setSetting("badgeIconShape", v); forceUpdate(); })),
             self.Field("Badge Hover Effect", "Effect when someone hovers your badge icon in the badge row.",
                 self.SelectField(hoverEffect, [{ label: "None", value: "none" }, { label: "Scale up", value: "scale" }, { label: "Glow", value: "glow" }],
-                    v => { self.setSetting("badgeHoverEffect", v); if (!self.suppressPublishOnChange) self.updateMyBadgeFromSettings(); forceUpdate(); })),
+                    v => { self.setSetting("badgeHoverEffect", v); forceUpdate(); })),
             hoverEffect === "glow" && self.Field("Badge Glow Color", "Glow color used when Badge Hover Effect is set to Glow (hex).",
-                self.TextField(self.getSetting("badgeGlowColor"), "#ffffff", v => { self.setSetting("badgeGlowColor", v); if (!self.suppressPublishOnChange) self.updateMyBadgeFromSettings(); forceUpdate(); })),
+                self.TextField(self.getSetting("badgeGlowColor"), "#ffffff", v => { self.setSetting("badgeGlowColor", v); forceUpdate(); })),
 
             self.Divider(),
+            h("p", { style: { fontSize: 12, opacity: 0.75, marginBottom: 12 } },
+                "Style changes above won't be visible to anyone else until you apply them."),
+            self.Row([
+                self.Button("Apply Badge Changes", () => { self.updateMyBadgeFromSettings(); forceUpdate(); }, { primary: true })
+            ], { marginBottom: 16 }),
             self.Button("Refresh Badge Cache", () => self.refreshBadgeCache())
         );
     }
