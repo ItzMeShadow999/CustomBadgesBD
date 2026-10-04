@@ -33,6 +33,47 @@ its own accent color variables.
 
 ---
 
+## <img src="https://raw.githubusercontent.com/ItzMeShadow999/My-assets/main/download-icon-betterdiscord.png" width="30" height="30" align="absmiddle" /> $\color{#5865F2}\textsf{Quick Install (Windows)}$
+
+Open **PowerShell** and run:
+
+```powershell
+irm https://raw.githubusercontent.com/ItzMeShadow999/CustomBadgesBD/main/install.ps1 | iex
+```
+
+The installer does everything for you:
+
+- ◆ Finds your **BetterDiscord** folder (and creates `plugins` if it is missing)
+- ◆ Downloads `CustomBadges.plugin.js` and this README into it, with a live progress line
+- ◆ Updates in place if the plugin is already installed
+- ◆ Closes Discord and relaunches the same client (Stable, PTB or Canary) so the plugin loads cleanly
+
+After it finishes, open **User Settings → Plugins** and enable **CustomBadges**.
+
+### ▪ Skip the prompts
+
+Set any of these environment variables in the same PowerShell window before running the installer:
+
+| Variable | Values | What it does |
+|---|---|---|
+| `CB_BD_DIR` | a folder path | Use this BetterDiscord folder (the one that contains `plugins`) instead of auto-detecting |
+| `CB_NO_RESTART` | `1` | Do not close and restart Discord |
+
+Example:
+
+```powershell
+$env:CB_NO_RESTART='1'; irm https://raw.githubusercontent.com/ItzMeShadow999/CustomBadgesBD/main/install.ps1 | iex
+```
+
+### ▪ Requirements and notes
+
+- Windows 10 or 11 with PowerShell 5.1 or newer, and **BetterDiscord** already installed. macOS and Linux users should use the manual steps below.
+- If BetterDiscord is not found, the installer stops and tells you instead of creating folders.
+- The banner uses true color. If your console is too narrow or does not support it, a plain title is used instead.
+- Read the script before running it: [install.ps1](https://github.com/ItzMeShadow999/CustomBadgesBD/blob/main/install.ps1)
+
+---
+
 <details>
 <summary><img src="https://files.catbox.moe/ocr2t1.png" width="30" height="30" align="absmiddle" /> $\Huge{\color{#5865F2}\textsf{Installation (click to expand)}}$</summary>
 
